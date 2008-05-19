@@ -8,6 +8,13 @@ krb5 = Krb5.new
 default_realm = krb5.get_default_realm
 puts default_realm
 
+# try to cache non-existant data (this should fail and throw an exception)
+begin
+  krb5.cache
+rescue Krb5Auth::Krb5::Exception
+  puts "Failed caching credentials before obtaining them.  Continuing..."
+end
+
 # Get initial credentials for the default principal and default keytab
 krb5.get_init_creds_keytab
 
@@ -16,3 +23,13 @@ krb5.cache
 
 # destroy those same credentials from the default cache location
 krb5.destroy
+
+# close the object (releases all memory)
+krb5.close
+
+# now try to use the object again; this should fail and throw an exception
+begin
+  krb5.cache
+rescue Krb5Auth::Krb5::Exception
+  puts "Tried to reuse closed object; continuing..."
+end
