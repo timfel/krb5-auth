@@ -1,0 +1,4 @@
+TODO items:
+1.  Implement cached principal listing (similar to klist)
+2.  Finer-grained error reporting
+3.  Documentation on how to use the API
