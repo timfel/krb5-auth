@@ -8,7 +8,7 @@
 #
 # Chris Lalancette <clalance@redhat.com>
 
-require 'ruby_krb5_auth'
+require 'krb5_auth'
 
 # Ruby C extension for basic Kerberos functions. Tested on Linux with
 # Kerberos 5-1.6.1

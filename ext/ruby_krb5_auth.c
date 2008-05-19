@@ -1,5 +1,5 @@
 /*
- * ruby_krb5_auth.c: Ruby bindings for kerberos authentication
+ * ruby_krb5_auth.c: Ruby bindings for Kerberos authentication
  *
  * Copyright (C) 2008 Red Hat Inc.
  *
@@ -415,7 +415,7 @@ static VALUE Krb5_close(VALUE self)
   return Qnil;
 }
 
-void Init_ruby_kerberos()
+void Init_krb5_auth()
 {
   mKerberos = rb_define_module("Krb5Auth");
 

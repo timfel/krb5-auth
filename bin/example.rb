@@ -1,5 +1,5 @@
-require 'kerberos'
-include Kerberos
+require 'krb5_auth'
+include Krb5Auth
 
 krb5 = Krb5.new
 
