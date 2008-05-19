@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'krb5_auth'
 include Krb5Auth
 
