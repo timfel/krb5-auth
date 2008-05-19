@@ -320,6 +320,13 @@ static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
     return Qfalse;
   }
 
+  if (!kerb->princ) {
+    // OK, it looks like they are trying to cache credentials that they don't
+    // yet have; just throw an exception so we don't segfault later
+    rb_raise(cKrb5_Exception, "%s", "Attempting to cache before obtaining credentials");
+    return Qfalse;
+  }
+
   if (cache_name == NULL) {
     krbret = krb5_cc_default(kerb->ctx, &cc);
   }
@@ -340,6 +347,8 @@ static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
   if (krbret) {
     goto fail_free_cc;
   }
+
+  krb5_cc_close(kerb->ctx, cc);
 
   return Qtrue;
 
