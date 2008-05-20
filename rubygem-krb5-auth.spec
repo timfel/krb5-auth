@@ -12,7 +12,7 @@ Release: 2%{?dist}
 Group: Development/Languages
 License: LGPLv2+
 URL: http://rubyforge.org/projects/krb5-auth
-Source0: http://rubyforge.org/projects/krb5-auth/%{gemname}-%{version}.gem
+Source0: http://gems.rubyforge.org/gems/%{gemname}-%{version}.gem
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: rubygems
 BuildRequires: ruby-devel
