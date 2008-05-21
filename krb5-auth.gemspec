@@ -2,7 +2,7 @@ require 'rubygems'
 
 SPEC = Gem::Specification.new do |s|
   s.name                = %q{krb5-auth}
-  s.version             = "0.5"
+  s.version             = "0.6"
   s.author              = %q{Chris Lalancette}
   s.email               = %q{clalance@redhat.com}
   s.platform            = Gem::Platform::RUBY

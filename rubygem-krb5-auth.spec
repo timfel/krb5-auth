@@ -1,4 +1,4 @@
-# Generated from krb5-auth-0.5.gem by gem2rpm -*- rpm-spec -*-
+# Generated from krb5-auth-0.6.gem by gem2rpm -*- rpm-spec -*-
 %define ruby_sitelib %(ruby -rrbconfig -e "puts Config::CONFIG['sitelibdir']")
 %define gemdir %(ruby -rubygems -e 'puts Gem::dir' 2>/dev/null)
 %define gemname krb5-auth
@@ -7,8 +7,8 @@
 
 Summary: Kerberos binding for Ruby
 Name: rubygem-%{gemname}
-Version: 0.5
-Release: 2%{?dist}
+Version: 0.6
+Release: 1%{?dist}
 Group: Development/Languages
 License: LGPLv2+
 URL: http://rubyforge.org/projects/krb5-auth
@@ -24,8 +24,12 @@ Provides: rubygem(%{gemname}) = %{version}
 Kerberos binding for Ruby
 
 %prep
+%setup -q -c
+%{__tar} -zx -f data.tar.gz
 
 %build
+ruby ext/extconf.rb
+make
 
 %install
 rm -rf %{buildroot}
@@ -33,15 +37,17 @@ mkdir -p %{buildroot}%{gemdir}
 gem install --local --install-dir %{buildroot}%{gemdir} \
             --force --rdoc %{SOURCE0}
 %{__install} -d -m0755 %{buildroot}%{ruby_sitearch}
-%{__mv} %{buildroot}%{geminstdir}/lib/krb5_auth.so %{buildroot}%{ruby_sitearch}
+# .so built by gem install has install-dir embedded, which fails check-buildroot
+%{__mv} krb5_auth.so %{buildroot}%{ruby_sitearch}
 %{__chmod} 0755 %{buildroot}%{ruby_sitearch}/krb5_auth.so
 %{__rm} -rf %{buildroot}%{geminstdir}/ext
-%{__strip} %{buildroot}%{ruby_sitearch}/krb5_auth.so
+%{__rm} -rf %{buildroot}%{geminstdir}/lib
 
 %clean
 rm -rf %{buildroot}
 
 %files
+%doc COPYING
 %defattr(-, root, root, -)
 %{ruby_sitearch}/krb5_auth.so
 %{gemdir}/gems/%{gemname}-%{version}/
@@ -51,6 +57,11 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed May 21 2008 Alan Pevec <apevec@redhat.com> 0.6-1
+- add debuginfo support, taken from rubygem-zoom.spec
+- include COPYING file in the gem (for licensing)
+- bump the version number to 0.6
+
 * Fri May 16 2008 Alan Pevec <apevec@redhat.com> 0.5-2
 - package shared library per Packaging/Ruby guidelines
 
