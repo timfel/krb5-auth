@@ -41,6 +41,9 @@ gem install --local --install-dir %{buildroot}%{gemdir} \
 %{__mv} krb5_auth.so %{buildroot}%{ruby_sitearch}
 %{__chmod} 0755 %{buildroot}%{ruby_sitearch}/krb5_auth.so
 %{__rm} -rf %{buildroot}%{geminstdir}/ext
+# even though we removed the lib/ directory from the svn sources, we still
+# need to remove the lib/ directory so that check-buildroot doesn't complain
+%{__rm} -rf %{buildroot}%{geminstdir}/lib
 
 %clean
 rm -rf %{buildroot}
