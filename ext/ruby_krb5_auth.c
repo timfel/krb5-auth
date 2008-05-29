@@ -20,8 +20,8 @@
  * Author: Chris Lalancette <clalance@redhat.com>
  */
 
-#include "ruby.h"
-#include "krb5.h"
+#include <ruby.h>
+#include <krb5.h>
 #include <stdio.h>
 #include <strings.h>
 
