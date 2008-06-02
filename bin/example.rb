@@ -23,6 +23,13 @@ krb5.cache
 
 puts "Principal: " + krb5.get_default_principal
 
+# List all of the credentials in the cache, and expiration times, etc.
+krb5.list_cache.each do |cred|
+  starttime = DateTime.strptime(cred.starttime.to_s, "%s")
+  endtime = DateTime.strptime(cred.endtime.to_s, "%s")
+  puts "Client: " + cred.client + " Server: " + cred.server + " starttime: " + starttime.strftime("%D %T") + " endtime: " + endtime.strftime("%D %T")
+end
+
 # destroy those same credentials from the default cache location
 krb5.destroy
 

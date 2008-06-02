@@ -27,6 +27,7 @@
 
 static VALUE mKerberos;
 static VALUE cKrb5;
+static VALUE cCred;
 static VALUE cKrb5_Exception;
 
 struct ruby_krb5 {
@@ -363,6 +364,112 @@ static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
   return Qfalse;
 }
 
+static VALUE Krb5_list_cache_creds(int argc, VALUE *argv, VALUE self)
+{
+  struct ruby_krb5 *kerb;
+  krb5_error_code krbret;
+  char *cache_name;
+  krb5_ccache cc;
+  krb5_cc_cursor cur;
+  krb5_creds creds;
+  char *name;
+  char *sname;
+  krb5_ticket *tkt;
+  VALUE result;
+  VALUE line;
+    
+  if (argc == 0) {
+    cache_name = NULL;
+  }
+  else if (argc == 1) {
+    Check_Type(argv[0], T_STRING);
+    cache_name = STR2CSTR(argv[0]);
+  }
+  else {
+    rb_raise(rb_eRuntimeError, "Invalid arguments");
+  }
+
+  Data_Get_Struct(self, struct ruby_krb5, kerb);
+  if (!kerb) {
+    NOSTRUCT_EXCEPT();
+    return Qfalse;
+  }
+
+  if (cache_name == NULL) {
+    krbret = krb5_cc_default(kerb->ctx, &cc);
+  }
+  else {
+    krbret = krb5_cc_resolve(kerb->ctx, cache_name, &cc);
+  }
+
+  if (krbret) {
+    goto cache_fail_raise;
+  }
+
+  krbret = krb5_cc_start_seq_get(kerb->ctx, cc, &cur);
+  if (krbret) {
+    goto cache_fail_close;
+  }
+
+  result = rb_ary_new();
+  while (!(krbret = krb5_cc_next_cred(kerb->ctx, cc, &cur, &creds))) {
+    krbret = krb5_unparse_name(kerb->ctx, creds.client, &name);
+    if (krbret) {
+      krb5_free_cred_contents(kerb->ctx, &creds);
+      break;
+    }
+    krbret = krb5_unparse_name(kerb->ctx, creds.server, &sname);
+    if (krbret) {
+      free(name);
+      krb5_free_cred_contents(kerb->ctx, &creds);
+      break;
+    }
+    krbret = krb5_decode_ticket(&creds.ticket, &tkt);
+    if (krbret) {
+      free(sname);
+      free(name);
+      krb5_free_cred_contents(kerb->ctx, &creds);
+      break;
+    }
+    line = rb_class_new_instance(0, NULL, cCred);
+    rb_iv_set(line, "@client", rb_str_new2(name));
+    rb_iv_set(line, "@server", rb_str_new2(sname));
+    rb_iv_set(line, "@starttime", INT2NUM(creds.times.starttime));
+    rb_iv_set(line, "@authtime", INT2NUM(creds.times.authtime));
+    rb_iv_set(line, "@endtime", INT2NUM(creds.times.endtime));
+    rb_iv_set(line, "@ticket_flags", INT2NUM(creds.ticket_flags));
+    rb_iv_set(line, "@cred_enctype", INT2NUM(creds.keyblock.enctype));
+    rb_iv_set(line, "@ticket_enctype", INT2NUM(tkt->enc_part.enctype));
+    rb_ary_push(result, line);
+    krb5_free_ticket(kerb->ctx, tkt);
+    free(sname);
+    free(name);
+    krb5_free_cred_contents(kerb->ctx, &creds);
+  }
+
+  if (krbret != KRB5_CC_END) {
+    // FIXME: do we need to free up "result" here?  There will be no
+    // references to it, so I think the garbage collector will pick it up,
+    // but I'm not sure.
+
+    goto cache_fail_close;
+  }
+
+  krbret = krb5_cc_end_seq_get(kerb->ctx, cc, &cur);
+
+  krb5_cc_close(kerb->ctx, cc);
+
+  return result;
+
+ cache_fail_close:
+  krb5_cc_close(kerb->ctx, cc);
+
+ cache_fail_raise:
+  Krb5_register_error(krbret);
+
+  return Qfalse;
+}
+
 static VALUE Krb5_destroy_creds(int argc, VALUE *argv, VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -432,6 +539,55 @@ void Init_krb5_auth()
 
   cKrb5_Exception = rb_define_class_under(cKrb5, "Exception", rb_eStandardError);
 
+  cCred = rb_define_class_under(cKrb5, "Cred", rb_cObject);
+  rb_define_attr(cCred, "client", 1, 0);
+  rb_define_attr(cCred, "server", 1, 0);
+  rb_define_attr(cCred, "starttime", 1, 0);
+  rb_define_attr(cCred, "authtime", 1, 0);
+  rb_define_attr(cCred, "endtime", 1, 0);
+  rb_define_attr(cCred, "ticket_flags", 1, 0);
+  rb_define_attr(cCred, "cred_enctype", 1, 0);
+  rb_define_attr(cCred, "ticket_enctype", 1, 0);
+
+#define DEF_FLAG_CONST(name) \
+  rb_define_const(cCred, #name, INT2NUM(name))
+
+  DEF_FLAG_CONST(TKT_FLG_FORWARDABLE);
+  DEF_FLAG_CONST(TKT_FLG_FORWARDED);
+  DEF_FLAG_CONST(TKT_FLG_PROXIABLE);
+  DEF_FLAG_CONST(TKT_FLG_PROXY);
+  DEF_FLAG_CONST(TKT_FLG_MAY_POSTDATE);
+  DEF_FLAG_CONST(TKT_FLG_POSTDATED);
+  DEF_FLAG_CONST(TKT_FLG_INVALID);
+  DEF_FLAG_CONST(TKT_FLG_RENEWABLE);
+  DEF_FLAG_CONST(TKT_FLG_INITIAL);
+  DEF_FLAG_CONST(TKT_FLG_HW_AUTH);
+  DEF_FLAG_CONST(TKT_FLG_PRE_AUTH);
+  DEF_FLAG_CONST(TKT_FLG_TRANSIT_POLICY_CHECKED);
+  DEF_FLAG_CONST(TKT_FLG_OK_AS_DELEGATE);
+  DEF_FLAG_CONST(TKT_FLG_ANONYMOUS);
+
+#undef DEF_FLAG_CONST
+
+#define DEF_ENC_CONST(name) \
+  rb_define_const(cCred, #name, INT2NUM(name))
+
+  DEF_ENC_CONST(ENCTYPE_NULL);
+  DEF_ENC_CONST(ENCTYPE_DES_CBC_CRC);
+  DEF_ENC_CONST(ENCTYPE_DES_CBC_MD4);
+  DEF_ENC_CONST(ENCTYPE_DES_CBC_MD5);
+  DEF_ENC_CONST(ENCTYPE_DES_CBC_RAW);
+  DEF_ENC_CONST(ENCTYPE_DES3_CBC_SHA);
+  DEF_ENC_CONST(ENCTYPE_DES3_CBC_RAW);
+  DEF_ENC_CONST(ENCTYPE_DES_HMAC_SHA1);
+  DEF_ENC_CONST(ENCTYPE_DES3_CBC_SHA1);
+  DEF_ENC_CONST(ENCTYPE_AES128_CTS_HMAC_SHA1_96);
+  DEF_ENC_CONST(ENCTYPE_AES256_CTS_HMAC_SHA1_96);
+  DEF_ENC_CONST(ENCTYPE_ARCFOUR_HMAC);
+  DEF_ENC_CONST(ENCTYPE_ARCFOUR_HMAC_EXP);
+  DEF_ENC_CONST(ENCTYPE_UNKNOWN);
+#undef DEF_ENC_CONST
+
   rb_define_singleton_method(cKrb5, "new", Krb5_new, 0);
   rb_define_method(cKrb5, "get_init_creds_password", Krb5_get_init_creds_password, 2);
   rb_define_method(cKrb5, "get_init_creds_keytab", Krb5_get_init_creds_keytab, -1);
@@ -439,6 +595,7 @@ void Init_krb5_auth()
   rb_define_method(cKrb5, "get_default_principal", Krb5_get_default_principal, 0);
   rb_define_method(cKrb5, "change_password", Krb5_change_password, 1);
   rb_define_method(cKrb5, "cache", Krb5_cache_creds, -1);
+  rb_define_method(cKrb5, "list_cache", Krb5_list_cache_creds, -1);
   rb_define_method(cKrb5, "destroy", Krb5_destroy_creds, -1);
   rb_define_method(cKrb5, "close", Krb5_close, 0);
 }
