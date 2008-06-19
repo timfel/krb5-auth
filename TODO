@@ -1,4 +1,3 @@
 TODO items:
-1.  Implement cached principal listing (similar to klist)
-2.  Finer-grained error reporting
-3.  Documentation on how to use the API (rdoc documentation in the C code)
+1.  Finer-grained error reporting
+2.  Automated tests

@@ -65,6 +65,12 @@ static void kerb_free(void *p)
   free(kerb);
 }
 
+/*
+ * call-seq:
+ *   new
+ *
+ * Create a new Krb5Auth::Krb5 object.  This must be called before any other methods are called.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_new(VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -87,6 +93,12 @@ static VALUE Krb5_new(VALUE self)
   return Data_Wrap_Struct(cKrb5, NULL, kerb_free, kerb);
 }
 
+/*
+ * call-seq:
+ *   get_default_realm -> string
+ *
+ * Call krb5_get_default_realm() to get the default realm.  Returns the default realm on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_get_default_realm(VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -113,6 +125,12 @@ static VALUE Krb5_get_default_realm(VALUE self)
   return result;
 }
 
+/*
+ * call-seq:
+ *   get_default_principal -> string
+ *
+ * Call krb5_cc_get_principal() to get the principal from the default cachefile.  Returns the default principal on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_get_default_principal(VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -155,6 +173,12 @@ static VALUE Krb5_get_default_principal(VALUE self)
   return result;
 }
 
+/*
+ * call-seq:
+ *   get_init_creds_password(username, password)
+ *
+ * Call krb5_get_init_creds_password() to get credentials based on a username and password.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_get_init_creds_password(VALUE self, VALUE _user, VALUE _pass)
 {
   Check_Type(_user,T_STRING);
@@ -192,6 +216,12 @@ static VALUE Krb5_get_init_creds_password(VALUE self, VALUE _user, VALUE _pass)
   return Qfalse;
 }
 
+/*
+ * call-seq:
+ *   get_init_creds_keytab([principal][,keytab])
+ *
+ * Call krb5_get_init_creds_keytab() to get credentials based on a keytab.  With no parameters, gets the default principal (probably the username@DEFAULT_REALM) from the default keytab (as configured in /etc/krb5.conf).  With one parameter, get the named principal from the default keytab (as configured in /etc/krb5.conf).  With two parameters, get the named principal from the named keytab.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_get_init_creds_keytab(int argc, VALUE *argv, VALUE self)
 {
   char *princ;
@@ -271,6 +301,12 @@ static VALUE Krb5_get_init_creds_keytab(int argc, VALUE *argv, VALUE self)
   return Qfalse;
 }
 
+/*
+ * call-seq:
+ *   set_password(new_password)
+ *
+ * Call krb5_set_password to set the password for this credential to new_password.  This requires that the credentials have already been fetched via Krb5.get_init_creds_password or Krb5.get_init_creds_keytab.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_change_password(VALUE self, VALUE _newpass)
 {
   Check_Type(_newpass,T_STRING);
@@ -297,6 +333,12 @@ static VALUE Krb5_change_password(VALUE self, VALUE _newpass)
   return Qtrue;
 }
 
+/*
+ * call-seq:
+ *   cache([cache_name])
+ *
+ * Call krb5_cc_store_cred to store credentials in a cachefile.  With no parameters, it stores the credentials in the default cachefile.  With one parameter, it stores the credentials in the named cachefile.  This requires that the credentials have already been fetched via Krb5.get_init_creds_password or Krb5.get_init_creds_keytab.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -364,6 +406,12 @@ static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
   return Qfalse;
 }
 
+/*
+ * call-seq:
+ *   list_cache([cache_name]) -> array
+ *
+ * Call krb5_cc_next_cred to fetch credentials from a cachefile.  With no parameters, it fetches the credentials in the default cachefile.  With one parameter, it fetches the credentials in the named cachefile.  Returns a list of Krb5Auth::Krb5::Cred objects on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_list_cache_creds(int argc, VALUE *argv, VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -470,6 +518,12 @@ static VALUE Krb5_list_cache_creds(int argc, VALUE *argv, VALUE self)
   return Qfalse;
 }
 
+/*
+ * call-seq:
+ *   destroy([cache_name])
+ *
+ * Call krb5_cc_destroy to destroy all credentials in a cachefile.  With no parameters, it destroys the credentials in the default cachefile.  With one parameter, it destroys the credentials in the named cachefile.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ */
 static VALUE Krb5_destroy_creds(int argc, VALUE *argv, VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -518,6 +572,12 @@ static VALUE Krb5_destroy_creds(int argc, VALUE *argv, VALUE self)
   return Qtrue;
 }
 
+/*
+ * call-seq:
+ *   close
+ *
+ * Free up all memory associated with this object.  After this is called, no more methods may be called against this object.
+ */
 static VALUE Krb5_close(VALUE self)
 {
   struct ruby_krb5 *kerb;
@@ -531,6 +591,11 @@ static VALUE Krb5_close(VALUE self)
   return Qnil;
 }
 
+/*
+ * = Ruby bindings for kerberos
+ *
+ * The module Krb5Auth provides bindings to kerberos version 5 libraries
+ */
 void Init_krb5_auth()
 {
   mKerberos = rb_define_module("Krb5Auth");

@@ -19,3 +19,6 @@ To build it just for development, you'll want to:
 $ cd ext
 $ ruby extconf.rb
 $ make
+
+To build the documentation, make sure you have rdoc installed, and then:
+$ rdoc ext/ruby_krb5_auth.c
