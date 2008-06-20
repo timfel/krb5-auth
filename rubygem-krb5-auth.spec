@@ -58,6 +58,10 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Jun 20 2008 Chris Lalancette <clalance@redhat.com> 0.7-1
+- Convert from hand-coded makes to a proper Rakefile
+- Update to 0.7
+
 * Wed May 21 2008 Alan Pevec <apevec@redhat.com> 0.6-1
 - add debuginfo support, taken from rubygem-zoom.spec
 - include COPYING file in the gem (for licensing)
