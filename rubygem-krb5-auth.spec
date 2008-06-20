@@ -18,6 +18,7 @@ Requires: rubygems
 BuildRequires: ruby-devel
 BuildRequires: rubygems
 BuildRequires: krb5-devel
+BuildRequires: rubygem-rake
 Provides: rubygem(%{gemname}) = %{version}
 
 %description
