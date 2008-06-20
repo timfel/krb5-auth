@@ -7,7 +7,7 @@
 
 Summary: Kerberos binding for Ruby
 Name: rubygem-%{gemname}
-Version: 0.6
+Version: @VERSION@
 Release: 1%{?dist}
 Group: Development/Languages
 License: LGPLv2+
@@ -28,8 +28,7 @@ Kerberos binding for Ruby
 %{__tar} -zx -f data.tar.gz
 
 %build
-ruby ext/extconf.rb
-make
+rake build
 
 %install
 rm -rf %{buildroot}
@@ -38,8 +37,8 @@ gem install --local --install-dir %{buildroot}%{gemdir} \
             --force --rdoc %{SOURCE0}
 %{__install} -d -m0755 %{buildroot}%{ruby_sitearch}
 # .so built by gem install has install-dir embedded, which fails check-buildroot
-%{__mv} krb5_auth.so %{buildroot}%{ruby_sitearch}
-%{__chmod} 0755 %{buildroot}%{ruby_sitearch}/krb5_auth.so
+pwd
+%{__install} -cpm 0755 ext/krb5_auth.so %{buildroot}%{ruby_sitearch}
 %{__rm} -rf %{buildroot}%{geminstdir}/ext
 # even though we removed the lib/ directory from the svn sources, we still
 # need to remove the lib/ directory so that check-buildroot doesn't complain

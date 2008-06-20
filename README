@@ -4,21 +4,18 @@ This is an implementation of Ruby bindings for the Kerberos library.
 
 To build a gem, you'll want to:
 
-$ gem build krb5-auth.gemspec
-# gem install krb5-auth-{VERSION}.gem
+$ rake gem
+$ sudo gem install pkg/krb5-auth-{VERSION}.gem
 
 To build an RPM, you'll want to:
 
-$ gem build krb5-auth.gemspec
-$ gem2rpm -s -t rubygem-krb5-auth.spec krb5-auth-{VERSION}.gem
-$ rpmbuild --rebuild rubygem-krb5-auth-{VERSION}-{RELEASE}.fc8.src.rpm
+$ rake rpm
+$ sudo rpm -Uvh pkg/{i386,x86_64}/rubygem-krb5-auth-{VERSION}.{i386,x86_64}.rpm
 
 and then install the resulting RPM.
 
 To build it just for development, you'll want to:
-$ cd ext
-$ ruby extconf.rb
-$ make
+$ rake build
 
 To build the documentation, make sure you have rdoc installed, and then:
-$ rdoc ext/ruby_krb5_auth.c
+$ rake rdoc
