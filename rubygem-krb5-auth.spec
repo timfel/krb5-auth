@@ -38,7 +38,6 @@ gem install --local --install-dir %{buildroot}%{gemdir} \
             --force --rdoc %{SOURCE0}
 %{__install} -d -m0755 %{buildroot}%{ruby_sitearch}
 # .so built by gem install has install-dir embedded, which fails check-buildroot
-pwd
 %{__install} -cpm 0755 ext/krb5_auth.so %{buildroot}%{ruby_sitearch}
 %{__rm} -rf %{buildroot}%{geminstdir}/ext
 # even though we removed the lib/ directory from the svn sources, we still
