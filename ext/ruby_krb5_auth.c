@@ -183,8 +183,8 @@ static VALUE Krb5_get_init_creds_password(VALUE self, VALUE _user, VALUE _pass)
 {
   Check_Type(_user,T_STRING);
   Check_Type(_pass,T_STRING);
-  char *user = STR2CSTR(_user);
-  char *pass = STR2CSTR(_pass);
+  char *user = StringValueCStr(_user);
+  char *pass = StringValueCStr(_pass);
 
   struct ruby_krb5 *kerb;
   krb5_error_code krbret;
@@ -238,14 +238,14 @@ static VALUE Krb5_get_init_creds_keytab(int argc, VALUE *argv, VALUE self)
   }
   else if (argc == 1) {
     Check_Type(argv[0], T_STRING);
-    princ = STR2CSTR(argv[0]);
+    princ = StringValueCStr(argv[0]);
     keytab_name = NULL;
   }
   else if (argc == 2) {
     Check_Type(argv[0], T_STRING);
     Check_Type(argv[1], T_STRING);
-    princ = STR2CSTR(argv[0]);
-    keytab_name = STR2CSTR(argv[1]);
+    princ = StringValueCStr(argv[0]);
+    keytab_name = StringValueCStr(argv[1]);
   }
   else {
     rb_raise(rb_eRuntimeError, "Invalid arguments");
@@ -310,7 +310,7 @@ static VALUE Krb5_get_init_creds_keytab(int argc, VALUE *argv, VALUE self)
 static VALUE Krb5_change_password(VALUE self, VALUE _newpass)
 {
   Check_Type(_newpass,T_STRING);
-  char *newpass = STR2CSTR(_newpass);
+  char *newpass = StringValueCStr(_newpass);
 
   struct ruby_krb5 *kerb;
   krb5_error_code krbret;
@@ -351,7 +351,7 @@ static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
   }
   else if (argc == 1) {
     Check_Type(argv[0], T_STRING);
-    cache_name = STR2CSTR(argv[0]);
+    cache_name = StringValueCStr(argv[0]);
   }
   else {
     rb_raise(rb_eRuntimeError, "Invalid arguments");
@@ -431,7 +431,7 @@ static VALUE Krb5_list_cache_creds(int argc, VALUE *argv, VALUE self)
   }
   else if (argc == 1) {
     Check_Type(argv[0], T_STRING);
-    cache_name = STR2CSTR(argv[0]);
+    cache_name = StringValueCStr(argv[0]);
   }
   else {
     rb_raise(rb_eRuntimeError, "Invalid arguments");
@@ -536,7 +536,7 @@ static VALUE Krb5_destroy_creds(int argc, VALUE *argv, VALUE self)
   }
   else if (argc == 1) {
     Check_Type(argv[0], T_STRING);
-    cache_name = STR2CSTR(argv[0]);
+    cache_name = StringValueCStr(argv[0]);
   }
   else {
     rb_raise(rb_eRuntimeError, "Invalid arguments");
