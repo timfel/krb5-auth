@@ -39,6 +39,16 @@ struct ruby_krb5 {
 #define OOM_EXCEPT() rb_raise(cKrb5_Exception, "%s", "Error mallocing memory");
 #define NOSTRUCT_EXCEPT() rb_raise(cKrb5_Exception, "%s", "Class not initialized properly (try 'new')");
 
+static char *get_string_or_nil(VALUE arg)
+{
+    if (TYPE(arg) == T_NIL)
+        return NULL;
+    else if (TYPE(arg) == T_STRING)
+        return StringValueCStr(arg);
+    else
+        rb_raise(rb_eTypeError, "wrong argument type (expected String or nil)");    return NULL;
+}
+
 void Krb5_register_error(int error)
 {
   rb_raise(cKrb5_Exception, "%s", error_message(error));
@@ -224,6 +234,7 @@ static VALUE Krb5_get_init_creds_password(VALUE self, VALUE _user, VALUE _pass)
  */
 static VALUE Krb5_get_init_creds_keytab(int argc, VALUE *argv, VALUE self)
 {
+  VALUE princ_val, keytab_val;
   char *princ;
   char *keytab_name;
   struct ruby_krb5 *kerb;
@@ -232,24 +243,10 @@ static VALUE Krb5_get_init_creds_keytab(int argc, VALUE *argv, VALUE self)
 
   keytab = NULL;
 
-  if (argc == 0) {
-    keytab_name = NULL;
-    princ = NULL;
-  }
-  else if (argc == 1) {
-    Check_Type(argv[0], T_STRING);
-    princ = StringValueCStr(argv[0]);
-    keytab_name = NULL;
-  }
-  else if (argc == 2) {
-    Check_Type(argv[0], T_STRING);
-    Check_Type(argv[1], T_STRING);
-    princ = StringValueCStr(argv[0]);
-    keytab_name = StringValueCStr(argv[1]);
-  }
-  else {
-    rb_raise(rb_eRuntimeError, "Invalid arguments");
-  }
+  rb_scan_args(argc, argv, "02", &princ_val, &keytab_val);
+
+  princ = get_string_or_nil(princ_val);
+  keytab_name = get_string_or_nil(keytab_val);
 
   Data_Get_Struct(self, struct ruby_krb5, kerb);
   if (!kerb) {
@@ -341,21 +338,15 @@ static VALUE Krb5_change_password(VALUE self, VALUE _newpass)
  */
 static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
 {
+  VALUE cache_val;
   struct ruby_krb5 *kerb;
   krb5_error_code krbret;
   char *cache_name;
   krb5_ccache cc;
 
-  if (argc == 0) {
-    cache_name = NULL;
-  }
-  else if (argc == 1) {
-    Check_Type(argv[0], T_STRING);
-    cache_name = StringValueCStr(argv[0]);
-  }
-  else {
-    rb_raise(rb_eRuntimeError, "Invalid arguments");
-  }
+  rb_scan_args(argc, argv, "01", &cache_val);
+
+  cache_name = get_string_or_nil(cache_val);
 
   Data_Get_Struct(self, struct ruby_krb5, kerb);
   if (!kerb) {
@@ -414,6 +405,7 @@ static VALUE Krb5_cache_creds(int argc, VALUE *argv, VALUE self)
  */
 static VALUE Krb5_list_cache_creds(int argc, VALUE *argv, VALUE self)
 {
+  VALUE cache_val;
   struct ruby_krb5 *kerb;
   krb5_error_code krbret;
   char *cache_name;
@@ -425,17 +417,10 @@ static VALUE Krb5_list_cache_creds(int argc, VALUE *argv, VALUE self)
   krb5_ticket *tkt;
   VALUE result;
   VALUE line;
-    
-  if (argc == 0) {
-    cache_name = NULL;
-  }
-  else if (argc == 1) {
-    Check_Type(argv[0], T_STRING);
-    cache_name = StringValueCStr(argv[0]);
-  }
-  else {
-    rb_raise(rb_eRuntimeError, "Invalid arguments");
-  }
+
+  rb_scan_args(argc, argv, "01", &cache_val);
+
+  cache_name = get_string_or_nil(cache_val);
 
   Data_Get_Struct(self, struct ruby_krb5, kerb);
   if (!kerb) {
@@ -526,21 +511,15 @@ static VALUE Krb5_list_cache_creds(int argc, VALUE *argv, VALUE self)
  */
 static VALUE Krb5_destroy_creds(int argc, VALUE *argv, VALUE self)
 {
+  VALUE cache_val;
   struct ruby_krb5 *kerb;
   krb5_error_code krbret;
   char *cache_name;
   krb5_ccache cc;
 
-  if (argc == 0) {
-    cache_name = NULL;
-  }
-  else if (argc == 1) {
-    Check_Type(argv[0], T_STRING);
-    cache_name = StringValueCStr(argv[0]);
-  }
-  else {
-    rb_raise(rb_eRuntimeError, "Invalid arguments");
-  }
+  rb_scan_args(argc, argv, "01", &cache_val);
+
+  cache_name = get_string_or_nil(cache_val);
 
   Data_Get_Struct(self, struct ruby_krb5, kerb);
   if (!kerb) {
