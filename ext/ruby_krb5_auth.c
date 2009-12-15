@@ -79,7 +79,10 @@ static void kerb_free(void *p)
  * call-seq:
  *   new
  *
- * Create a new Krb5Auth::Krb5 object.  This must be called before any other methods are called.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ * Create a new Krb5Auth::Krb5 object. This must be called before any other
+ * methods are called.
+ *
+ * Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
  */
 static VALUE Krb5_new(VALUE self)
 {
@@ -117,12 +120,14 @@ static VALUE Krb5_get_default_realm(VALUE self)
   krb5_error_code krbret;
 
   Data_Get_Struct(self, struct ruby_krb5, kerb);
+
   if (!kerb) {
     NOSTRUCT_EXCEPT();
     return Qfalse;
   }
 
   krbret = krb5_get_default_realm(kerb->ctx, &realm);
+
   if (krbret) {
     Krb5_register_error(krbret);    
     return Qnil;
@@ -139,7 +144,9 @@ static VALUE Krb5_get_default_realm(VALUE self)
  * call-seq:
  *   get_default_principal -> string
  *
- * Call krb5_cc_get_principal() to get the principal from the default cachefile.  Returns the default principal on success, raises Krb5Auth::Krb5::Exception on failure.
+ * Call krb5_cc_get_principal() to get the principal from the default
+ * cachefile.  Returns the default principal on success, raises a
+ * Krb5Auth::Krb5::Exception on failure.
  */
 static VALUE Krb5_get_default_principal(VALUE self)
 {
@@ -187,7 +194,9 @@ static VALUE Krb5_get_default_principal(VALUE self)
  * call-seq:
  *   get_init_creds_password(username, password)
  *
- * Call krb5_get_init_creds_password() to get credentials based on a username and password.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ * Call krb5_get_init_creds_password() to get credentials based on a username
+ * and password.  Returns true on success, raises Krb5Auth::Krb5::Exception on
+ * failure.
  */
 static VALUE Krb5_get_init_creds_password(VALUE self, VALUE _user, VALUE _pass)
 {
@@ -300,11 +309,92 @@ static VALUE Krb5_get_init_creds_keytab(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
+ *   change_password(old_password, new_password)
+ *
+ * Allow user to change their Kerberos password, providing the +old_password+ 
+ * and the +new_password+.
+ * 
+ * Returns true on success, raises a Krb5Auth::Krb5::Exception on failure.
+ */
+static VALUE Krb5_change_password(VALUE self, VALUE v_old, VALUE v_new)
+{
+  char *oldpass;
+  char *newpass;
+  int pw_result;
+  struct ruby_krb5 *kerb;
+  krb5_error_code krbret;
+  krb5_data pw_res_string, res_string;
+
+  Check_Type(v_old, T_STRING);
+  Check_Type(v_new, T_STRING);
+
+  oldpass = StringValueCStr(v_old);
+  newpass = StringValueCStr(v_new);
+
+  Data_Get_Struct(self, struct ruby_krb5, kerb);
+
+  if(!kerb){
+    NOSTRUCT_EXCEPT();
+    return Qfalse;
+  }
+
+  krbret = krb5_get_init_creds_password(
+    kerb->ctx,
+    &kerb->creds,
+    kerb->princ,
+    oldpass,
+    NULL,
+    NULL,
+    0,
+    "kadmin/changepw",
+    NULL
+  );
+
+  if(krbret){
+    Krb5_register_error(krbret);
+    return Qfalse; 
+  }
+
+  krbret = krb5_change_password(
+    kerb->ctx,
+    &kerb->creds,
+    newpass,
+    &pw_result,
+    &pw_res_string,
+    &res_string    
+  );
+
+  // 0 is success. Anything else is failure.
+
+  if(krbret){
+    Krb5_register_error(krbret);
+    return Qfalse; 
+  }
+
+  if(pw_result){
+    Krb5_register_error(pw_result);
+    return Qfalse; 
+  }
+
+  return Qtrue;
+}
+
+/*
+ * call-seq:
  *   set_password(new_password)
  *
- * Call krb5_set_password to set the password for this credential to new_password.  This requires that the credentials have already been fetched via Krb5.get_init_creds_password or Krb5.get_init_creds_keytab.  Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ * Call krb5_set_password() to set the password for this credential to
+ * new_password.
+ *
+ * This method requires that the credential for kadmin/changepw@REALM has
+ * already been fetched using Krb5#get_init_creds_password or
+ * Krb5#get_init_creds_keytab.
+ * 
+ * Returns true on success, raises Krb5Auth::Krb5::Exception on failure.
+ *--
+ * TODO: This method does not work at the moment.
  */
-static VALUE Krb5_change_password(VALUE self, VALUE _newpass)
+static VALUE Krb5_set_password(VALUE self, VALUE _newpass)
 {
   Check_Type(_newpass,T_STRING);
   char *newpass = StringValueCStr(_newpass);
@@ -315,15 +405,31 @@ static VALUE Krb5_change_password(VALUE self, VALUE _newpass)
   krb5_data pw_res_string, res_string;
 
   Data_Get_Struct(self, struct ruby_krb5, kerb);
-  if (!kerb) {
+
+  if(!kerb){
     NOSTRUCT_EXCEPT();
     return Qfalse;
   }
 
-  krbret = krb5_set_password(kerb->ctx, &kerb->creds, newpass, NULL,
-			     &pw_result, &pw_res_string, &res_string );
-  if (krbret) {
+  // TODO: get kadmin/changepw credentials here.
+
+  krbret = krb5_set_password(
+    kerb->ctx,
+    &kerb->creds,
+    newpass,
+    NULL,
+    &pw_result,
+    &pw_res_string,
+    &res_string
+  );
+
+  if(krbret){
     Krb5_register_error(krbret);
+    return Qfalse;
+  }
+
+  if(pw_result){
+    Krb5_register_error(pw_result);
     return Qfalse;
   }
 
@@ -637,9 +743,13 @@ void Init_krb5_auth()
   rb_define_method(cKrb5, "get_init_creds_keytab", Krb5_get_init_creds_keytab, -1);
   rb_define_method(cKrb5, "get_default_realm", Krb5_get_default_realm, 0);
   rb_define_method(cKrb5, "get_default_principal", Krb5_get_default_principal, 0);
-  rb_define_method(cKrb5, "change_password", Krb5_change_password, 1);
+  rb_define_method(cKrb5, "change_password", Krb5_change_password, 2);
+  rb_define_method(cKrb5, "set_password", Krb5_set_password, 1);
   rb_define_method(cKrb5, "cache", Krb5_cache_creds, -1);
   rb_define_method(cKrb5, "list_cache", Krb5_list_cache_creds, -1);
   rb_define_method(cKrb5, "destroy", Krb5_destroy_creds, -1);
   rb_define_method(cKrb5, "close", Krb5_close, 0);
+
+  /* 0.8.0: The version of the krb5-auth library */
+  rb_define_const(cKrb5, "VERSION", rb_str_new2("0.8.0"));
 }
