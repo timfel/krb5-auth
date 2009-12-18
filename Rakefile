@@ -58,23 +58,28 @@ end
 #
 
 PKG_FILES = FileList[
-    "README","bin/example.rb","ext/extconf.rb",
-    "ext/ruby_krb5_auth.c","COPYING","TODO","Rakefile"
+  "README",
+  "examples/example.rb",
+  "ext/extconf.rb",
+  "ext/ruby_krb5_auth.c",
+  "test/test_krb5.rb",
+  "Rakefile"
 ]
 
 SPEC = Gem::Specification.new do |s|
-  s.name                = PKG_NAME
-  s.version             = PKG_VERSION
-  s.email               = "clalance@redhat.com"
-  s.homepage            = "http://rubyforge.org/projects/krb5-auth/"
-  s.summary             = "Kerberos binding for Ruby"
-  s.files               = PKG_FILES
-  s.autorequire         = "Krb5Auth"
-  s.require_paths       = [ "ext" ]
-  s.extensions		= "ext/extconf.rb"
-  s.author              = "Chris Lalancette"
-  s.platform            = Gem::Platform::RUBY
-  s.has_rdoc            = true
+  s.name          = PKG_NAME
+  s.version       = PKG_VERSION
+  s.email         = "clalance@redhat.com"
+  s.homepage      = "http://rubyforge.org/projects/krb5-auth/"
+  s.summary       = "Kerberos binding for Ruby"
+  s.license       = "LGPL"
+  s.files         = PKG_FILES
+  s.autorequire   = "Krb5Auth"
+  s.require_paths = [ "ext" ]
+  s.extensions    = "ext/extconf.rb"
+  s.author        = "Chris Lalancette"
+  s.platform      = Gem::Platform::RUBY
+  s.has_rdoc      = true
 end
 
 Rake::GemPackageTask.new(SPEC) do |pkg|
@@ -100,4 +105,11 @@ end
 
 desc "Default task: build all"
 task :default => [ :build, :rdoc, :rpm ] do |t|
+end
+
+Rake::TestTask.new(:test) do |test|
+  task :test => [:build]
+  test.libs << 'ext'
+  test.warning = true
+  test.verbose = true
 end
