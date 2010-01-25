@@ -1,5 +1,6 @@
 require 'mkmf'
 
+RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
 extension_name = 'krb5_auth'
 dir_config(extension_name)
 have_library("c", "main")
