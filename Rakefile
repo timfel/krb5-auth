@@ -62,7 +62,6 @@ PKG_FILES = FileList[
   "examples/example.rb",
   "ext/extconf.rb",
   "ext/ruby_krb5_auth.c",
-  "test/test_krb5.rb",
   "Rakefile"
 ]
 
