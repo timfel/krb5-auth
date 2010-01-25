@@ -15,7 +15,7 @@ require 'rake/testtask'
 require 'rake/gempackagetask'
 
 PKG_NAME='timfel-krb5-auth'
-PKG_VERSION='0.9.0'
+PKG_VERSION='0.8.1'
 
 EXT_CONF='ext/extconf.rb'
 MAKEFILE='ext/Makefile'
