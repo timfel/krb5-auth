@@ -10,9 +10,9 @@
 
 # Rakefile for ruby-rpm -*- ruby -*-
 require 'rake/clean'
-require 'rake/rdoctask'
+require 'rdoc/task'
 require 'rake/testtask'
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 
 PKG_NAME='timfel-krb5-auth'
 PKG_VERSION='0.8.1'
@@ -81,7 +81,7 @@ SPEC = Gem::Specification.new do |s|
   s.has_rdoc      = true
 end
 
-Rake::GemPackageTask.new(SPEC) do |pkg|
+Gem::PackageTask.new(SPEC) do |pkg|
     pkg.need_tar = true
     pkg.need_zip = true
 end
