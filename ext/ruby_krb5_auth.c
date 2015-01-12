@@ -201,13 +201,14 @@ static VALUE Krb5_get_default_principal(VALUE self)
  */
 static VALUE Krb5_get_init_creds_password(VALUE self, VALUE _user, VALUE _pass)
 {
-  Check_Type(_user,T_STRING);
-  Check_Type(_pass,T_STRING);
-  char *user = StringValueCStr(_user);
-  char *pass = StringValueCStr(_pass);
-
+  char *user, *pass;
   struct ruby_krb5 *kerb;
   krb5_error_code krbret;
+
+  Check_Type(_user,T_STRING);
+  Check_Type(_pass,T_STRING);
+  user = StringValueCStr(_user);
+  pass = StringValueCStr(_pass);
 
   Data_Get_Struct(self, struct ruby_krb5, kerb);
   if (!kerb) {
@@ -397,14 +398,14 @@ static VALUE Krb5_change_password(VALUE self, VALUE v_old, VALUE v_new)
  */
 static VALUE Krb5_set_password(VALUE self, VALUE _newpass)
 {
-  Check_Type(_newpass,T_STRING);
-  char *newpass = StringValueCStr(_newpass);
-
+  char *newpass;
   struct ruby_krb5 *kerb;
   krb5_error_code krbret;
   int pw_result;
   krb5_data pw_res_string, res_string;
 
+  Check_Type(_newpass,T_STRING);
+  newpass = StringValueCStr(_newpass);
   Data_Get_Struct(self, struct ruby_krb5, kerb);
 
   if(!kerb){
