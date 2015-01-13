@@ -24,7 +24,9 @@
 #include <krb5.h>
 #include <stdio.h>
 #include <strings.h>
+#ifdef HAVE_COM_ERR_H
 #include <com_err.h>
+#endif
 
 static VALUE mKerberos;
 static VALUE cKrb5;
